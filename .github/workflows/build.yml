@@ -13,10 +13,10 @@ jobs:
         with:
           flutter-version: '3.22.5'
           channel: stable
-      - run: flutter pub get
-      - run: flutter build apk --release
+      - run: cd dsa-palwal-app && flutter pub get
+      - run: cd dsa-palwal-app && flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
           name: dsa-palwal-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: dsa-palwal-app/build/app/outputs/flutter-apk/app-release.apk
           
