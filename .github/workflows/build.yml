@@ -1,0 +1,27 @@
+name: Build DSA Palwal APK
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Bubblewrap
+        run: npm i -g @bubblewrap/cli
+      - name: Init Project
+        run: |
+          bubblewrap init --manifest https://www.dsapalwal.in/manifest.json --directory ./twa-project || \
+          bubblewrap init --manifest https://dsapalwal.in/manifest.json --directory ./twa-project || \
+          echo '{"packageId":"com.dsapalwal.app","host":"www.dsapalwal.in","name":"DSA Palwal","launcherName":"DSA Palwal","display":"standalone","themeColor":"#ffffff","backgroundColor":"#ffffff","startUrl":"/","iconUrl":"https://www.dsapalwal.in/favicon.ico","maskableIconUrl":null,"splashScreenColor":"#ffffff","signing":{"deploy":{"keystore":null}},"appVersion":"1.0.0","appVersionCode":1,"shortcuts":[],"generatorApp":"bubblewrap-cli","webManifestUrl":"https://www.dsapalwal.in/manifest.json","fallbackType":"customtabs","features":{"locationDelegation":{"enabled":true},"playBilling":{"enabled":false}},"alphaDependencies":{"enabled":false},"enableNotifications":{"enabled":false},"isChromeOSOnly":false,"isMetaQuest":false,"fullScopeUrl":"https://www.dsapalwal.in/","minSdkVersion":19}' > ./twa-project/twa-manifest.json
+      - name: Build APK
+        run: |
+          cd twa-project
+          bubblewrap build --skipPwaValidation
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsa-palwal-apk
+          path: twa-project/app/build/outputs/bundle/release/app-release-signed.apk
