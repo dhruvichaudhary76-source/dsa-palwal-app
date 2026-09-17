@@ -5,23 +5,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-java@v4
         with:
-          node-version: 20
-      - name: Install Bubblewrap
-        run: npm i -g @bubblewrap/cli
-      - name: Init Project
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.5'
+          channel: 'stable'
+      - name: Create Flutter App
         run: |
-          bubblewrap init --manifest https://www.dsapalwal.in/manifest.json --directory ./twa-project || \
-          bubblewrap init --manifest https://dsapalwal.in/manifest.json --directory ./twa-project || \
-          echo '{"packageId":"com.dsapalwal.app","host":"www.dsapalwal.in","name":"DSA Palwal","launcherName":"DSA Palwal","display":"standalone","themeColor":"#ffffff","backgroundColor":"#ffffff","startUrl":"/","iconUrl":"https://www.dsapalwal.in/favicon.ico","maskableIconUrl":null,"splashScreenColor":"#ffffff","signing":{"deploy":{"keystore":null}},"appVersion":"1.0.0","appVersionCode":1,"shortcuts":[],"generatorApp":"bubblewrap-cli","webManifestUrl":"https://www.dsapalwal.in/manifest.json","fallbackType":"customtabs","features":{"locationDelegation":{"enabled":true},"playBilling":{"enabled":false}},"alphaDependencies":{"enabled":false},"enableNotifications":{"enabled":false},"isChromeOSOnly":false,"isMetaQuest":false,"fullScopeUrl":"https://www.dsapalwal.in/","minSdkVersion":19}' > ./twa-project/twa-manifest.json
+          rm -rf lib
+          mkdir lib
+          echo "import 'package:flutter/material.dart'; import 'package:webview_flutter/webview_flutter.dart'; void main(){WidgetsFlutterBinding.ensureInitialized(); runApp(const MyApp());} class MyApp extends StatelessWidget{const MyApp({super.key}); @override Widget build(BuildContext context){return const MaterialApp(home: WebScreen());}} class WebScreen extends StatefulWidget{const WebScreen({super.key}); @override State<WebScreen> createState()=>_WebScreenState();} class _WebScreenState extends State<WebScreen>{late final WebViewController controller; @override void initState(){super.initState(); controller=WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted)..loadRequest(Uri.parse('https://dsapalwal.in')); } @override Widget build(BuildContext context){return Scaffold(body: SafeArea(child: WebViewWidget(controller: controller)));}}" > lib/main.dart
+          echo "name: dsa_palwal_app
+          description: DSA Palwal App
+          publish_to: 'none'
+          version: 1.0.0+1
+          environment:
+            sdk: '>=3.0.0 <4.0.0'
+          dependencies:
+            flutter:
+              sdk: flutter
+            webview_flutter: ^4.8.0
+          flutter:
+            uses-material-design: true" > pubspec.yaml
+          flutter create --project-name dsa_palwal_app --org com.dsapalwal --platforms=android --overwrite .
+          flutter pub get
       - name: Build APK
-        run: |
-          cd twa-project
-          bubblewrap build --skipPwaValidation
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+        run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
         with:
           name: dsa-palwal-apk
-          path: twa-project/app/build/outputs/bundle/release/app-release-signed.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
