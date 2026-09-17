@@ -13,27 +13,12 @@ jobs:
         with:
           flutter-version: '3.22.5'
           channel: 'stable'
-      - name: Create Flutter App
-        run: |
-          rm -rf lib
-          mkdir lib
-          echo "import 'package:flutter/material.dart'; import 'package:webview_flutter/webview_flutter.dart'; void main(){WidgetsFlutterBinding.ensureInitialized(); runApp(const MyApp());} class MyApp extends StatelessWidget{const MyApp({super.key}); @override Widget build(BuildContext context){return const MaterialApp(home: WebScreen());}} class WebScreen extends StatefulWidget{const WebScreen({super.key}); @override State<WebScreen> createState()=>_WebScreenState();} class _WebScreenState extends State<WebScreen>{late final WebViewController controller; @override void initState(){super.initState(); controller=WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted)..loadRequest(Uri.parse('https://dsapalwal.in')); } @override Widget build(BuildContext context){return Scaffold(body: SafeArea(child: WebViewWidget(controller: controller)));}}" > lib/main.dart
-          echo "name: dsa_palwal_app
-          description: DSA Palwal App
-          publish_to: 'none'
-          version: 1.0.0+1
-          environment:
-            sdk: '>=3.0.0 <4.0.0'
-          dependencies:
-            flutter:
-              sdk: flutter
-            webview_flutter: ^4.8.0
-          flutter:
-            uses-material-design: true" > pubspec.yaml
-          flutter create --project-name dsa_palwal_app --org com.dsapalwal --platforms=android --overwrite .
-          flutter pub get
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          flutter create --project-name dsa_palwal_app --org com.dsapalwal --platforms=android --overwrite .
+          flutter pub add webview_flutter
+          echo "import 'package:flutter/material.dart'; import 'package:webview_flutter/webview_flutter.dart'; void main(){runApp(const MyApp());} class MyApp extends StatelessWidget{const MyApp({super.key}); @override Widget build(BuildContext context){return MaterialApp(home: Scaffold(body: SafeArea(child: WebViewWidget(controller: WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted)..loadRequest(Uri.parse('https://dsapalwal.in'))))));}}" > lib/main.dart
+          flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
           name: dsa-palwal-apk
