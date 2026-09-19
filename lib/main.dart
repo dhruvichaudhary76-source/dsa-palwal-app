@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -8,6 +9,7 @@ void main() {
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -20,17 +22,31 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..enableZoom(false)
-      ..clearCache()
-      ..clearLocalStorage()
+      ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
-          onNavigationRequest: (request) {
-            return NavigationDecision.navigate;
-          },
+          onPageStarted: (url) {},
+          onPageFinished: (url) {},
         ),
-      )
-      ..loadRequest(Uri.parse('https://dsapalwal.in/'));
+      );
+
+    _initController();
+  }
+
+  Future<void> _initController() async {
+    if (controller.platform is AndroidWebViewController) {
+      final androidController =
+          controller.platform as AndroidWebViewController;
+
+      // Fix 1: Android cache mode set karo (koi extra boolean nahi chahiye)
+      await androidController.setCacheMode(AndroidCacheMode.LOAD_NO_CACHE);
+    }
+
+    // Fix 2: clearCache() koi parameter nahi leta - bina argument ke call karo
+    await controller.clearCache();
+
+    // Cache clear hone ke baad URL load hoga
+    await controller.loadRequest(Uri.parse('https://dsapalwal.in/'));
   }
 
   @override
@@ -38,7 +54,9 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: SafeArea(child: WebViewWidget(controller: controller)),
+        body: SafeArea(
+          child: WebViewWidget(controller: controller),
+        ),
       ),
     );
   }
