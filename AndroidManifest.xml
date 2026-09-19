@@ -27,4 +27,6 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-</manifest>
+</manifest> Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+intent.setData(Uri.fromParts("package", getPackageName(), null));
+startActivity(intent);
