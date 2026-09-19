@@ -1,0 +1,164 @@
+
+Action: view_file({"path":"/app/design_guidelines.json"})
+Observation: [Showing lines 1-160 of 160 total] /app/design_guidelines.json:
+1|{
+2|  "app_name": "EkFinance",
+3|  "personality": "1 iOS-Native Clean",
+4|  "personality_one_liner": "A bold, elegant, and highly functional personal finance tracker grounded in warm off-whites, deep pine greens, and iOS-native precision.",
+5|  "color": {
+6|    "surface": "#FBFBF9",
+7|    "onSurface": "#1A1C1A",
+8|    "surfaceSecondary": "#FFFFFF",
+9|    "onSurfaceSecondary": "#1A1C1A",
+10|    "surfaceTertiary": "#F2F2EF",
+11|    "onSurfaceTertiary": "#4A4C4A",
+12|    "surfaceInverse": "#1A1C1A",
+13|    "onSurfaceInverse": "#FBFBF9",
+14|    "brand": "#114B3B",
+15|    "brandPrimary": "#114B3B",
+16|    "onBrandPrimary": "#FFFFFF",
+17|    "brandSecondary": "#D49A44",
+18|    "onBrandSecondary": "#FFFFFF",
+19|    "brandTertiary": "#E7F3EF",
+20|    "onBrandTertiary": "#0B3026",
+21|    "success": "#287D56",
+22|    "onSuccess": "#FFFFFF",
+23|    "warning": "#C47C20",
+24|    "onWarning": "#FFFFFF",
+25|    "error": "#BA3C30",
+26|    "onError": "#FFFFFF",
+27|    "info": "#4A4C4A",
+28|    "onInfo": "#FFFFFF",
+29|    "border": "#E4E4E0",
+30|    "borderStrong": "#CACAC5",
+31|    "muted": "#747674",
+32|    "onBrand": "#FFFFFF"
+33|  },
+34|  "typography": {
+35|    "displayFontFamily": "Plus Jakarta Sans",
+36|    "textFontFamily": "Geist",
+37|    "scale": {
+38|      "sm": 12,
+39|      "base": 14,
+40|      "lg": 16,
+41|      "xl": 20,
+42|      "2xl": 24
+43|    }
+44|  },
+45|  "spacing": {
+46|    "rule": "Generous vertical breathing room for content separation. Avoid dense dashboard cramming. Thumb-zone optimization for the FAB and forms.",
+47|    "xs": 4,
+48|    "sm": 8,
+49|    "md": 12,
+50|    "lg": 16,
+51|    "xl": 24,
+52|    "2xl": 32,
+53|    "3xl": 48
+54|  },
+55|  "radius_tokens": {
+56|    "sm": 6,
+57|    "md": 12,
+58|    "lg": 20,
+59|    "pill": 999
+60|  },
+61|  "shadow_tier": 1,
+62|  "navigation": "bottom_tabs",
+63|  "icon_set": "Phosphor",
+64|  "glassmorphism": {
+65|    "enabled": true,
+66|    "do's": [
+67|      "Use over abstract hero backgrounds on the Balance Card.",
+68|      "Use for the sticky bottom tab bar.",
+69|      "Apply to sticky headers that overlay scrolling transaction lists."
+70|    ],
+71|    "dont's": [
+72|      "Never use on standard list rows, form fields, or chips.",
+73|      "Do not blur primary buttons."
+74|    ]
+75|  },
+76|  "platform_libraries": {
+77|    "glass": {
+78|      "ios": "expo-glass-effect",
+79|      "android": "expo-blur",
+80|      "low_end_android_fallback": "solid surfaceSecondary"
+81|    },
+82|    "image": "expo-image",
+83|    "blur": "expo-blur",
+84|    "bottom_sheet": "@gorhom/bottom-sheet",
+85|    "animation": "react-native-reanimated",
+86|    "gesture": "react-native-gesture-handler",
+87|    "charts": "victory-native"
+88|  },
+89|  "screens": [
+90|    {
+91|      "name": "Biometric Lock",
+92|      "purpose": "A secure, elegant Day 1 entry screen that greets the user and requests biometric authentication.",
+93|      "states": {
+94|        "loading": "Subtle pulsing fingerprint/face icon.",
+95|        "empty": "N/A",
+96|        "error": "Shake animation on icon + subtle red error text, followed by retry."
+97|      },
+98|      "layout": "Full-bleed background image with a gradient scrim (top to bottom fade). Centered Phosphor icon (FaceID/Fingerprint) enclosed in a glassmorphic pill or circle. Minimal greeting text below. No complex layout, completely focused on the authentication action."
+99|    },
+100|    {
+101|      "name": "Home Dashboard",
+102|      "purpose": "Provides immediate financial clarity with a balance summary and a fast-scanning recent transactions list.",
+103|      "states": {
+104|        "loading": "Skeleton UI for balance card and transaction list rows.",
+105|        "empty": "Illustration/plant image + 'No transactions yet. Start logging your expenses.' + CTA.",
+106|        "error": "Error message with a retry button centered in the transactions area."
+107|      },
+108|      "layout": "Sticky top area featuring a 'BalanceCard' overlaying a rich abstract texture image using a glassmorphism frosted effect. Below the balance, a segmented control or time-range toggle (Week/Month/Year). The middle/lower section is a vertical list of recent transactions grouped by date. A sticky primary FAB (floating action button) rests in the bottom right or center for adding transactions."
+109|    },
+110|    {
+111|      "name": "Add Transaction",
+112|      "purpose": "A frictionless, thumb-friendly form for logging expenses and income.",
+113|      "states": {
+114|        "loading": "Spinner in the submit button.",
+115|        "empty": "N/A",
+116|        "error": "Inline form validation errors in error color."
+117|      },
+118|      "layout": "Full-screen modal sheet. Segmented control at top (Income / Expense). Large numeric keypad or numeric input field at the top center. Below, single-column form fields for Category (invokes a bottom sheet with chips), Date, and Note. The 'Save' button is a full-width sticky primary CTA pinned at the bottom above the keyboard."
+119|    },
+120|    {
+121|      "name": "Statistics & Budget",
+122|      "purpose": "Visualizes spending patterns via Victory Native charts and lists budget limits.",
+123|      "states": {
+124|        "loading": "Skeleton loader for the chart area.",
+125|        "empty": "No data illustration + 'Log expenses to see your spending trends.'",
+126|        "error": "Standard error prompt with retry icon."
+127|      },
+128|      "layout": "Top section features a Victory Native donut chart for expense breakdown. Below the chart, category filter chips (horizontal scroll). The lower half contains a list of 'BudgetProgress' cards showing category limits vs. actual spending, using thin progress bars."
+129|    }
+130|  ],
+131|  "images": {
+132|    "hero_balance_bg": {
+133|      "url": "https://images.pexels.com/photos/13807429/pexels-photo-13807429.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+134|      "dark": "https://images.unsplash.com/photo-1710438399422-2fca27686bcd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxkYXJrJTIwbW9kZSUyMGFic3RyYWN0JTIwdGV4dHVyZSUyMGVsZWdhbnR8ZW58MHx8fHwxNzg5ODM2NTIzfDA&ixlib=rb-4.1.0&q=85",
+135|      "alt": "Elegant abstract geometric shape in warm earth tones."
+136|    },
+137|    "empty_transactions": {
+138|      "url": "https://images.unsplash.com/photo-1519393085459-be21f89585f1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzV8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwZW1wdHklMjB3YWxsZXQlMjBwbGFudHxlbnwwfHx8fDE3ODk4MzY1MTZ8MA&ixlib=rb-4.1.0&q=85",
+139|      "alt": "Minimalist green English ivy plant symbolizing an empty fresh start."
+140|    }
+141|  },
+142|  "haptics": {
+143|    "button_primary": "impactMedium",
+144|    "tab_change": "selection",
+145|    "transaction_save": "notificationSuccess",
+146|    "error_state": "notificationError",
+147|    "biometric_success": "impactLight",
+148|    "filter_chip_select": "selection"
+149|  },
+150|  "instructions_to_main_agent": [
+151|    "Strictly follow the color palette constraints: NO blues, purples, or default generic colors. The primary accent is a Deep Pine Green (#114B3B) to convey finance gracefully.",
+152|    "Implement the 'BalanceCard' in the Home Dashboard with a gradient scrim (using expo-linear-gradient) over the 'hero_balance_bg' image, topped with expo-glass-effect (or expo-blur) so text remains crisp.",
+153|    "Do NOT use emojis anywhere in the UI. For transaction category icons, use Phosphor icons wrapped in a rounded square with a 'brandTertiary' background tint.",
+154|    "Ensure the 'Add Transaction' button is a persistent FAB or sticky full-width bottom CTA in the layout, sitting securely above the safe area bottom.",
+155|    "The default currency is INR (₹). Ensure all formatters default to Indian numbering formats.",
+156|    "Data storage is Async Storage local-only, and Biometric lock should guard the App entry point right at startup.",
+157|    "Ensure 'Victory Native' is used for the Statistics chart as requested in the problem statement.",
+158|    "Integrate Notifications permission checks prominently, potentially as a Day 1 onboarding step or embedded in Settings."
+159|  ]
+160|}
+[End of file]
