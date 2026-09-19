@@ -7,6 +7,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -16,6 +17,14 @@ class MyApp extends StatelessWidget {
           child: WebViewWidget(
             controller: WebViewController()
               ..setJavaScriptMode(JavaScriptMode.unrestricted)
+              ..setBackgroundColor(const Color(0x00000000))
+              ..setNavigationDelegate(
+                NavigationDelegate(
+                  onPageStarted: (url) {},
+                  onPageFinished: (url) {},
+                  onWebResourceError: (error) {},
+                ),
+              )
               ..loadRequest(Uri.parse('https://dsapalwal.in')),
           ),
         ),
