@@ -67,8 +67,6 @@ class _MyAppState extends State<MyHomePage> {
             }
           },
           onWebResourceError: (WebResourceError error) {
-            // net::ERR_CACHE_MISS and similar navigation errors land here.
-            // We only treat main-frame failures as a real error screen.
             if (mounted) {
               setState(() {
                 _isLoading = false;
@@ -89,8 +87,6 @@ class _MyAppState extends State<MyHomePage> {
       _isLoading = true;
       _hasError = false;
     });
-    // Reloading via a fresh loadRequest avoids the stale POST-cache
-    // lookup that causes net::ERR_CACHE_MISS on some Android WebViews.
     await _controller.loadRequest(Uri.parse(_url));
   }
 
