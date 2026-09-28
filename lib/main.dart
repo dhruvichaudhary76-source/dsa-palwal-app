@@ -1,8 +1,9 @@
-import 'dart:async';
-import 'dart:io';
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,138 +11,105 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DSA Palwal',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(),
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const HomeScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
   @override
-  State<MyHomePage> createState() => _MyAppState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _MyAppState extends State<MyHomePage> {
-  static const String _url = 'https://dsapalwal.in/';
-
-  late final WebViewController _controller;
-
-  bool _isLoading = true;
-  bool _hasError = false;
+class _HomeScreenState extends State<HomeScreen> {
+  late final WebViewController controller;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _initController();
-  }
-
-  void _initController() {
-    _controller = WebViewController()
+    controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.white)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (String url) {
-            if (mounted) {
-              setState(() {
-                _isLoading = true;
-                _hasError = false;
-              });
-            }
-          },
           onPageFinished: (String url) {
-            if (mounted) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          },
-          onWebResourceError: (WebResourceError error) {
-            if (mounted) {
-              setState(() {
-                _isLoading = false;
-                _hasError = true;
-              });
-            }
-          },
-          onNavigationRequest: (NavigationRequest request) {
-            return NavigationDecision.navigate;
+            setState(() { isLoading = false; });
           },
         ),
       )
-      ..loadRequest(Uri.parse(_url));
+      ..loadRequest(Uri.parse('https://your-website.com')); // Yahan apni website daal
+
+    // Tera wala logic yahan call hoga
+    checkForUpdate();
   }
 
-  Future<void> _reload() async {
-    setState(() {
-      _isLoading = true;
-      _hasError = false;
-    });
-    await _controller.loadRequest(Uri.parse(_url));
-  }
+  // Tera wala code - Flutter version
+  Future<void> checkForUpdate() async {
+    try {
+      // App start hone par current version check hoga
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      int currentVersion = int.parse(packageInfo.buildNumber); // Example: 2
 
-  Future<bool> _onWillPop() async {
-    if (await _controller.canGoBack()) {
-      _controller.goBack();
-      return false;
+      // Server se fetch kiya hua current server version
+      final response = await http.get(Uri.parse(
+          'https://raw.githubusercontent.com/dhruvichaudhary76-source/dsa-palwal-app/main/version.json'));
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        int serverVersion = data['latestVersion']; // Server se milega, e.g., 3
+
+        if (serverVersion > currentVersion) {
+          // Tabhi Update ka dialog show hoga
+          showUpdateDialog(data['message'], data['apkUrl']);
+        }
+      }
+    } catch (e) {
+      debugPrint("Update check error: $e");
     }
-    return true;
+  }
+
+  void showUpdateDialog(String message, String apkUrl) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Naya Update! 🚀"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Baad me"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final Uri url = Uri.parse(apkUrl);
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: const Text("Update Karo"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        if (didPop) return;
-        final shouldPop = await _onWillPop();
-        if (shouldPop && mounted) {
-          Navigator.of(context).maybePop();
-        }
-      },
-      child: Scaffold(
-        body: SafeArea(
-          child: Stack(
-            children: [
-              if (!_hasError) WebViewWidget(controller: _controller),
-              if (_isLoading && !_hasError)
-                const Center(child: CircularProgressIndicator()),
-              if (_hasError)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.wifi_off, size: 64, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Page load nahi ho paayi.\nApna internet check karke\ndobara try karein.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: _reload,
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+    return Scaffold(
+      appBar: AppBar(title: const Text("DSA Palwal App")),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: controller),
+          if (isLoading) const Center(child: CircularProgressIndicator()),
+        ],
       ),
     );
   }
