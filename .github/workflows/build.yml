@@ -2,26 +2,99 @@ name: Build DSA Palwal APK
 on:
   push:
     branches: [ main ]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.2'
           channel: 'stable'
-      - name: Build APK
+
+      - name: Create and Build App
         run: |
-          cd dsa-palwal-app
+          if [! -f pubspec.yaml ]; then
+            flutter create. --project-name dsa_palwal_app --platforms=android --org com.dsapalwal
+          fi
+
+          cat > pubspec.yaml <<'PUB'
+          name: dsa_palwal_app
+          description: DSA Palwal Offline Google Form
+          version: 1.0.0+1
+          environment:
+            sdk: '>=3.0.0 <4.0.0'
+          dependencies:
+            flutter:
+              sdk: flutter
+            cupertino_icons: ^1.0.6
+            shared_preferences: ^2.2.2
+            uuid: ^4.3.3
+            intl: ^0.19.0
+          flutter:
+            uses-material-design: true
+          PUB
+
+          mkdir -p lib
+          cat > lib/main.dart <<'DART'
+          import 'dart:convert';
+          import 'package:flutter/material.dart';
+          import 'package:shared_preferences/shared_preferences.dart';
+          import 'package:uuid/uuid.dart';
+          import 'package:intl/intl.dart';
+          void main()=>runApp(const DSAPalwalApp());
+          class DSAPalwalApp extends StatelessWidget{
+            const DSAPalwalApp({super.key});
+            @override Widget build(BuildContext context){
+              return MaterialApp(title:'DSA Palwal',debugShowCheckedModeBanner:false,theme:ThemeData(primarySwatch:Colors.deepPurple,useMaterial3:true),home:const HomeScreen());
+            }
+          }
+          class HomeScreen extends StatefulWidget{const HomeScreen({super.key});@override State<HomeScreen> createState()=>_HomeScreenState();}
+          class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin{
+            late TabController _tab; List forms=[]; List responses=[];
+            @override void initState(){super.initState();_tab=TabController(length:2,vsync:this);_load();}
+            Future<void> _load() async{final p=await SharedPreferences.getInstance();setState((){forms=jsonDecode(p.getString('forms')??'[]');responses=jsonDecode(p.getString('responses')??'[]');});}
+            Future<void> _save() async{final p=await SharedPreferences.getInstance();await p.setString('forms',jsonEncode(forms));await p.setString('responses',jsonEncode(responses));}
+            @override Widget build(BuildContext context){
+              return Scaffold(
+                appBar:AppBar(title:const Text('DSA Palwal - Offline Form'),bottom:TabBar(controller:_tab,tabs:const [Tab(text:'Forms',icon:Icon(Icons.list_alt)),Tab(text:'Responses',icon:Icon(Icons.bar_chart))])),
+                body:TabBarView(controller:_tab,children:[_formsTab(),_respTab()]),
+                floatingActionButton:FloatingActionButton.extended(onPressed:_newForm,icon:const Icon(Icons.add),label:const Text('New Form')),
+              );
+            }
+            Widget _formsTab(){if(forms.isEmpty)return const Center(child:Text('No forms. Tap + to create'));return ListView.builder(itemCount:forms.length,itemBuilder:(c,i){final f=forms[i];return Card(margin:const EdgeInsets.all(8),child:ListTile(title:Text(f['title']),subtitle:Text('${(f['questions'] as List).length} Qs'),onTap:()=>_openForm(f)));});}
+            Widget _respTab(){if(responses.isEmpty)return const Center(child:Text('No responses'));return ListView.builder(itemCount:responses.length,itemBuilder:(c,i){final r=responses[responses.length-1-i];return Card(margin:const EdgeInsets.all(8),child:ListTile(title:Text(r['formTitle']),subtitle:Text(DateFormat('dd/MM hh:mm a').format(DateTime.parse(r['date'])))));});}
+            void _newForm(){
+              final tCtrl=TextEditingController(); List qs=[];
+              showDialog(context:context,builder:(ctx)=>StatefulBuilder(builder:(ctx,setS)=>AlertDialog(
+                title:const Text('Create Form'),content:SizedBox(width:400,child:SingleChildScrollView(child:Column(children:[
+                  TextField(controller:tCtrl,decoration:const InputDecoration(labelText:'Form Title')),
+                 ...qs.asMap().entries.map((e)=>Card(child:ListTile(title:Text(e.value['text']),subtitle:Text(e.value['type'])))),
+                  ElevatedButton.icon(onPressed:(){
+                    final qC=TextEditingController();final oC=TextEditingController();String ty='text';
+                    showDialog(context:ctx,builder:(c2)=>AlertDialog(title:const Text('Add Q'),content:Column(mainAxisSize:MainAxisSize.min,children:[TextField(controller:qC,decoration:const InputDecoration(labelText:'Question')),TextField(controller:oC,decoration:const InputDecoration(labelText:'Options comma se',hintText:'Haan,Nahi'))]),actions:[ElevatedButton(onPressed:(){if(qC.text.isNotEmpty){setS(()=>qs.add({'id':const Uuid().v4(),'text':qC.text,'type':ty,'options':oC.text.split(',').map((s)=>s.trim()).toList()}));Navigator.pop(c2);} },child:const Text('Add'))]));
+                  },icon:const Icon(Icons.add),label:const Text('Add Question'))
+                ]))),actions:[ElevatedButton(onPressed:(){if(tCtrl.text.isNotEmpty){setState(()=>forms.add({'id':const Uuid().v4(),'title':tCtrl.text,'questions':qs}));_save();Navigator.pop(ctx);}},child:const Text('Save'))],
+              )));
+            }
+            void _openForm(f){
+              Map ans={};
+              showDialog(context:context,builder:(ctx)=>AlertDialog(title:Text(f['title']),content:SizedBox(width:400,height:300,child:ListView(children:(f['questions'] as List).map<Widget>((q)=>Padding(padding:const EdgeInsets.all(8),child:TextField(decoration:InputDecoration(labelText:q['text'],border:const OutlineInputBorder()),onChanged:(v)=>ans[q['id']]=v))).toList())),actions:[ElevatedButton(onPressed:(){setState(()=>responses.add({'formTitle':f['title'],'date':DateTime.now().toIso8601String()}));_save();Navigator.pop(ctx);ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Saved Offline!')));},child:const Text('Submit'))]));
+            }
+          }
+          DART
+
           flutter pub get
           flutter build apk --release
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+
+      - uses: actions/upload-artifact@v4
         with:
           name: DSA-Google-Form-Offline-APK
-          path: dsa-palwal-app/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
