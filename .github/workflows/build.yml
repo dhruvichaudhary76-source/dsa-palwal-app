@@ -1,33 +1,20 @@
-name: DSA Palwal PRO - All Features
-on:
-  push:
-    branches: [ main ]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.22.2'
-          channel: 'stable'
-      - name: Fix and Build APK
-        run: |
-          cp lib/main.dart /tmp/main.dart.bak
-          cp pubspec.yaml /tmp/pub.yaml.bak
-          flutter create . --platforms android --org com.dsapalwal --project-name dsa_palwal_app --overwrite
-          cp /tmp/main.dart.bak lib/main.dart
-          cp /tmp/pub.yaml.bak pubspec.yaml
-          flutter pub get
-          flutter build apk --release
-          ls -lh build/app/outputs/flutter-apk/
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: DSA-Palwal-PRO-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
+name: dsa_palwal_app
+description: DSA Palwal PRO
+publish_to: 'none'
+version: 1.0.0+1
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.2.2
+  uuid: ^4.4.0
+  intl: ^0.19.0
+  image_picker: ^1.0.7
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  path_provider: ^2.1.2
+  share_plus: ^7.2.2
+  cupertino_icons: ^1.0.6
+flutter:
+  uses-material-design: true
