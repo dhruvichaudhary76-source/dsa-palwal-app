@@ -1,5 +1,5 @@
 name: dsa_palwal_app
-description: DSA Palwal Learning App
+description: DSA Palwal - Complete City App
 publish_to: 'none'
 version: 2.0.0+2
 
@@ -9,10 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  webview_flutter: ^4.8.0
-  http: ^1.2.0
-  package_info_plus: ^8.0.0
-  url_launcher: ^6.2.5
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
