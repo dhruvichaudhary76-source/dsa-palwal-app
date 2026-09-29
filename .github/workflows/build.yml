@@ -15,13 +15,19 @@ jobs:
         with:
           flutter-version: '3.22.2'
           channel: 'stable'
-      - name: Build APK
+      - name: Fix and Build APK
         run: |
-          flutter create . --platforms android --org com.dsapalwal --project-name dsa_palwal_app
+          cp lib/main.dart /tmp/main.dart.bak
+          cp pubspec.yaml /tmp/pub.yaml.bak
+          flutter create . --platforms android --org com.dsapalwal --project-name dsa_palwal_app --overwrite
+          cp /tmp/main.dart.bak lib/main.dart
+          cp /tmp/pub.yaml.bak pubspec.yaml
           flutter pub get
           flutter build apk --release
+          ls -lh build/app/outputs/flutter-apk/
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: DSA-Palwal-PRO-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
